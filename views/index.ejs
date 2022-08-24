@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Draw a polygon and calculate its area</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <style>
+        .calculation-box {
+            height: 75px;
+            width: 150px;
+            position: absolute;
+            bottom: 40px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            text-align: center;
+        }
+
+        p {
+            font-family: 'Open Sans';
+            margin: 0;
+            font-size: 13px;
+        }
+    </style>
+
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css"
+        type="text/css">
+    <div id="map"></div>
+    <div class="calculation-box">
+        <p>GEO2SHP.</p>
+        <div id="calculated-area">
+        </div>
+        <div>
+            <button id="save_shp">Save</button>
+            <button id="download">downald</button>
+            <!-- <form action="/download" method="get">
+                <button type="submit">Download</button>
+            </form> -->
+        </div>
+    </div>
+
+    <script>
+        let data
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYW1lemlhbmVnaXMiLCJhIjoiY2t6bW9kdXkyMnIwODJ1b2M3cHViYmljOCJ9.3Qf9Qmomwm1raTlf_YDfqg';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/satellite-v9',
+            center: [-6.874, 34.76],
+            zoom: 5
+        });
+
+        const draw = new MapboxDraw({
+            displayControlsDefault: false,
+            controls: {
+                polygon: true,
+                trash: true
+            },
+
+        });
+        map.addControl(draw);
+
+        map.on('draw.create', updateArea);
+        map.on('draw.delete', updateArea);
+        map.on('draw.update', updateArea);
+
+        function updateArea(e) {
+            data = draw.getAll();
+            const answer = document.getElementById('calculated-area');
+            if (data.features.length > 0) {
+                const area = turf.area(data);
+                const rounded_area = Math.round(area * 100) / 100;
+                answer.innerHTML = `<p><strong>${rounded_area}</strong></p><p>square meters</p>`;
+            } else {
+                answer.innerHTML = '';
+                if (e.type !== 'draw.delete')
+                    alert('Click the map to draw a polygon.');
+            }
+        }
+
+
+        $('#save_shp').off().on('click', () => {
+            console.log(data.features);
+
+            $.ajax({
+                headers: {
+                    Accept: "application/json",
+                },
+                url: `${window.origin}/geojson2shp`,
+                method: "POST",
+                data: JSON.stringify({ data: data.features }),
+                processData: false,
+                contentType: "application/json",
+                success: (result) => {
+                    console.log(result);
+                    let urlDown=result.url.replace('"','');
+                    urlDown=urlDown.replace('\\','/');
+                    // window.location.replace(urlDown)
+                    // window.location.href = urlDown
+                    console.log(urlDown);
+                },
+                beforeSend: () => {
+
+                },
+                complete: () => {
+
+                },
+                error: (errResp) => {
+                    const { status, responseJSON } = errResp;
+
+                },
+            });
+        })
+        // $('#download').off().on('click', () => {
+        //     console.log(data.features);
+
+        //     $.ajax({
+        //         headers: {
+        //             Accept: "application/json",
+        //         },
+        //         url: `${window.origin}/path/e74db214-465f-4137-bf3a-5321f6e6ff50.zip`,
+        //         method: "GET",
+        //         processData: false,
+        //         contentType: "application/json",
+        //         success: (result) => {
+
+        //         },
+        //         beforeSend: () => {
+
+        //         },
+        //         complete: () => {
+
+        //         },
+        //         error: (errResp) => {
+        //             const { status, responseJSON } = errResp;
+
+        //         },
+        //     });
+        // })
+
+
+    </script>
+
+</body>
+
+</html>
