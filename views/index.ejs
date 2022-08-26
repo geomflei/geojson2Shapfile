@@ -114,12 +114,12 @@
                 processData: false,
                 contentType: "application/json",
                 success: (result) => {
-                    console.log(result);
-                    let urlDown=result.url.replace('"','');
-                    urlDown=urlDown.replace('\\','/');
-                    // window.location.replace(urlDown)
-                    // window.location.href = urlDown
-                    console.log(urlDown);
+                    if (result.success) {
+                        console.log(result.file);
+                       
+                        window.open(`${window.origin}/download/${result.file}`);
+                        
+                    }
                 },
                 beforeSend: () => {
 

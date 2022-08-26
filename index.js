@@ -26,14 +26,16 @@ app.post("/geojson2shp",async (req, res) => {
     targetCrs: 26191,
   }
   const features = req.body.data
-  const dataConvert=await convert(features, __dirname + `/public/path/test.zip`, options)
-  res.json({file:fileName,url:__dirname + `/public/path/test.zip`})
+  const dataConvert=await convert(features, __dirname + `/public/path/${fileName}.zip`, options)
+  res.json({success:true,file:fileName})
 })  
 
 
-app.get("/download",async (req, res) => {
-  console.log('get file;',__dirname + `/path/test.zip`);
-  res.download(__dirname + `/public/path/test.zip`);
+app.get("/download/:id",async (req, res) => {
+  let downald_shp=req.params.id
+  console.log('get file;',__dirname + `/path/${downald_shp}.zip`);
+  
+  res.download(`${__dirname}/public/path/${downald_shp}.zip`);
 })  
 
 
