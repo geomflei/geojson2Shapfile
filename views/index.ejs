@@ -3,8 +3,10 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Draw a polygon and calculate its area</title>
+    <title>Download Shapfile</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -48,19 +50,20 @@
     <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css"
         type="text/css">
-    <div id="map"></div>
-    <div class="calculation-box">
-        <p>GEO2SHP.</p>
-        <div id="calculated-area">
-        </div>
-        <div>
-            <button id="save_shp">Save</button>
-            <!-- <button id="download">downald</button> -->
-            <form action="/download" method="get">
-                <button type="submit">Download</button>
-            </form>
+        <!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+    <div id="map">
+        <div style="position: absolute; z-index: 9999; bottom: 44px; left: 30%; right: 30%; }">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content rounded-4 shadow">
+                  <div class="modal-footer flex-column border-top-0">
+                    <button type="button" class="btn btn-lg btn-primary w-100 mx-0 mb-2" disabled id="save_shp">download</button>
+                  </div>
+                </div>
+              </div>
         </div>
     </div>
+
 
     <script>
         let data
@@ -88,13 +91,11 @@
 
         function updateArea(e) {
             data = draw.getAll();
-            const answer = document.getElementById('calculated-area');
             if (data.features.length > 0) {
                 const area = turf.area(data);
                 const rounded_area = Math.round(area * 100) / 100;
-                answer.innerHTML = `<p><strong>${rounded_area}</strong></p><p>square meters</p>`;
+                $( "#save_shp" ).prop( "disabled", false );
             } else {
-                answer.innerHTML = '';
                 if (e.type !== 'draw.delete')
                     alert('Click the map to draw a polygon.');
             }
@@ -114,11 +115,10 @@
                 processData: false,
                 contentType: "application/json",
                 success: (result) => {
-                    if (result.success) {
-                        console.log(result.file);
-                       
+                    if (result.success) {                    
                         window.open(`${window.origin}/download/${result.file}`);
-                        
+                        $( "#save_shp" ).prop( "disabled", true );
+                        draw.deleteAll()
                     }
                 },
                 beforeSend: () => {
@@ -133,34 +133,6 @@
                 },
             });
         })
-        // $('#download').off().on('click', () => {
-        //     console.log(data.features);
-
-        //     $.ajax({
-        //         headers: {
-        //             Accept: "application/json",
-        //         },
-        //         url: `${window.origin}/path/e74db214-465f-4137-bf3a-5321f6e6ff50.zip`,
-        //         method: "GET",
-        //         processData: false,
-        //         contentType: "application/json",
-        //         success: (result) => {
-
-        //         },
-        //         beforeSend: () => {
-
-        //         },
-        //         complete: () => {
-
-        //         },
-        //         error: (errResp) => {
-        //             const { status, responseJSON } = errResp;
-
-        //         },
-        //     });
-        // })
-
-
     </script>
 
 </body>
